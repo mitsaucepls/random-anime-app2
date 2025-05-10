@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "bundler",
+    "module": "node16",
     "target": "ES2022",
     "moduleResolution": "node16",
     "esModuleInterop": true,
@@ -8,10 +8,10 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": "electron",
     "sourceMap": true,
     "types": ["node"]
   },
-  "include": ["src/**/*"],
+  "include": ["electron/**/*"],
 }
 

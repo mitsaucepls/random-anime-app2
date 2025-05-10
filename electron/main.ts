@@ -1,9 +1,7 @@
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
-import * as path from 'path';
 
 function createWindow(): BrowserWindow {
   // force xwayland for transparency on Linux
-  app.commandLine.appendSwitch('disable-features', 'useozoneplatform');
   app.commandLine.appendSwitch('enable-transparent-visuals');
   app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 
@@ -24,7 +22,13 @@ function createWindow(): BrowserWindow {
 
   const win = new BrowserWindow(windowOpts);
 
-  win.loadFile(path.join(__dirname, 'index.html'));
+  if (process.env.NODE_ENV === 'development') {
+    win.loadURL('http://localhost:5173');
+  } else {
+    win.loadFile('dist/src/index.html');
+  }
+
+
   win.setIgnoreMouseEvents(true, { forward: true });
 
   // auto-open DevTools so you can see console.log/debug()

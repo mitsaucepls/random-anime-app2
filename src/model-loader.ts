@@ -1,8 +1,9 @@
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { VRMLoaderPlugin, MToonMaterialLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
-import { MToonNodeMaterial } from '@pixiv/three-vrm/nodes';
+import { VRMLoaderPlugin, MToonMaterialLoaderPlugin } from '@pixiv/three-vrm';
+// idk bugged?
+// import { MToonNodeMaterial } from '@pixiv/three-vrm/nodes';
 
 console.debug('⏳ Initializing renderer & scene');
 
@@ -44,20 +45,18 @@ scene.add(axesHelper);
 console.debug('Helpers added: GridHelper, AxesHelper');
 
 // gltf and vrm
-let currentVrm;
+let currentVrm: any;
 const loader = new GLTFLoader();
 loader.crossOrigin = 'anonymous';
 console.debug('GLTFLoader created');
 
 loader.register((parser) => {
   console.debug('Registering VRM plugin for parser:', parser);
-  const mtoonMaterialPlugin = new MToonMaterialLoaderPlugin(parser, {
-    materialType: MToonNodeMaterial,
-  });
+  const mtoonMaterialPlugin = new MToonMaterialLoaderPlugin(parser);
   return new VRMLoaderPlugin(parser, { mtoonMaterialPlugin });
 });
 
-function load(url) {
+function load(url: string) {
   console.log(`▶ Loading VRM from URL: ${url}`);
   loader.load(
     url,
@@ -67,18 +66,18 @@ function load(url) {
       console.debug('Extracted VRM:', vrm);
 
       console.debug('Applying VRMUtils optimizations');
-      VRMUtils.removeUnnecessaryVertices(gltf.scene);
-      VRMUtils.combineSkeletons(gltf.scene);
-      VRMUtils.combineMorphs(vrm);
+      // VRM.removeUnnecessaryVertices(gltf.scene);
+      // VRM.combineSkeletons(gltf.scene);
+      // VRM.combineMorphs(vrm);
 
       if (currentVrm) {
         console.debug('Disposing previous VRM:', currentVrm);
         scene.remove(currentVrm.scene);
-        VRMUtils.deepDispose(currentVrm.scene);
+        // VRM.deepDispose(currentVrm.scene);
       }
 
       console.debug('Disabling frustum culling on new VRM');
-      vrm.scene.traverse((obj) => {
+      vrm.scene.traverse((obj: any) => {
         obj.frustumCulled = false;
       });
 
@@ -87,7 +86,7 @@ function load(url) {
       console.log('➕ VRM added to scene:', vrm.scene);
 
       console.debug('Rotating VRM0.0 if needed');
-      VRMUtils.rotateVRM0(vrm);
+      // VRM.rotateVRM0(vrm);
 
       console.log('🎉 VRM setup complete:', vrm);
     },
@@ -101,7 +100,7 @@ function load(url) {
   );
 }
 
-load('./assets/model.vrm');
+load('../assets/model.vrm');
 
 // animate
 const clock = new THREE.Clock();
@@ -136,24 +135,30 @@ window.addEventListener('dragover', (event) => {
   console.debug('dragover event');
 });
 
-window.addEventListener('drop', (event) => {
+window.addEventListener('drop', (event: DragEvent) => {
   event.preventDefault();
   console.log('File dropped');
 
-  const files = event.dataTransfer.files;
-  if (!files || files.length === 0) {
+  // 1) narrow dataTransfer from DragEvent | null to DataTransfer
+  const dt = event.dataTransfer;
+  if (!dt) {
+    console.warn('No DataTransfer object on drop event');
+    return;
+  }
+
+  // 2) pull out files and guard against empty FileList
+  const files = dt.files;
+  if (files.length === 0) {
     console.warn('No files found in drop event');
     return;
   }
 
-  const file = files[0];
-  if (!file) {
-    console.warn('Dropped file is undefined');
-    return;
-  }
-
+  // 3) safely grab the first file
+  const file = files[0]!;
   console.log('Creating blob URL for file:', file.name);
-  const blob = new Blob([file], { type: 'application/octet-stream' });
+
+  // 4) create and load the blob URL
+  const blob = new Blob([file], { type: file.type || 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
   load(url);
 });
