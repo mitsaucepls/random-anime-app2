@@ -1,0 +1,25 @@
+{
+  "name": "vrm-desktop-pet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc && cp src/index.html dist/index.html",
+    "start": "npm run build && electron .",
+    "watch": "tsc -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "@types/three": "^0.176.0",
+    "electron": "^36.2.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@pixiv/three-vrm": "^3.4.0",
+    "three": "^0.176.0"
+  }
+}
